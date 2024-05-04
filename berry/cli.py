@@ -548,7 +548,7 @@ def berry_vis_cli():
     sub_programs = {
         "debug": "debug_vis",
         "geometry": "geometry_vis",
-        "wave": "wave_vis",
+        "bands": "bands_vis",
     }
     ###########################################################################
     # 1. DEFINING BERRY VIS CLI ARGS
@@ -560,11 +560,11 @@ def berry_vis_cli():
     vis_sub_parser = parser.add_subparsers(metavar="VIS_PROGRAMS", dest="vis_programs", help="Choose a visualization program.")
     debug_parser = vis_sub_parser.add_parser("debug", help="Prints data for debugging.")
     geometry_parser = vis_sub_parser.add_parser("geometry", help="Draws Berry connection and curvature vectors.")
-    wave_parser = vis_sub_parser.add_parser("wave", help="Shows the electronic band structure.")
+    bands_parser = vis_sub_parser.add_parser("bands", help="Shows the electronic band structure.")
     
     debug_dot2_parser, debug_eigen_parser = handle_debug_parser(debug_parser)
     bcc_parser, bcr_parser = handle_geometry_parser(geometry_parser)
-    wave_corrected_parser, wave_machine_parser = handle_wave_parser(wave_parser)
+    bands_corrected_parser, bands_machine_parser = handle_bands_parser(bands_parser)
 
     argcomplete.autocomplete(parser)
 
@@ -583,18 +583,18 @@ def berry_vis_cli():
         bcr_parser.add_argument("-space", default="all", choices=["all", "real", "imag", "complex"], help="Space to visualize (default: all).")
         
         if m.initial_band != "dummy":
-            wave_corrected_parser.add_argument("Mb", type=int, metavar=f"Mb ({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help="Maximum band to consider")
-            wave_corrected_parser.add_argument("-mb", type=int, default=m.initial_band, metavar=f"({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help=f"Minimum band to consider (default: {m.initial_band})")
+            bands_corrected_parser.add_argument("Mb", type=int, metavar=f"Mb ({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help="Maximum band to consider")
+            bands_corrected_parser.add_argument("-mb", type=int, default=m.initial_band, metavar=f"({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help=f"Minimum band to consider (default: {m.initial_band})")
         else:
-            wave_corrected_parser.add_argument("Mb", type=int, metavar=f"Mb (0-{m.nbnd-1})", choices=range(m.nbnd), help="Maximum band to consider")
-            wave_corrected_parser.add_argument("-mb", type=int, default=0, metavar=f"(0-{m.nbnd-1})", choices=range(m.nbnd), help="Minimum band to consider (default: 0)")
+            bands_corrected_parser.add_argument("Mb", type=int, metavar=f"Mb (0-{m.nbnd-1})", choices=range(m.nbnd), help="Maximum band to consider")
+            bands_corrected_parser.add_argument("-mb", type=int, default=0, metavar=f"(0-{m.nbnd-1})", choices=range(m.nbnd), help="Minimum band to consider (default: 0)")
         
         if m.initial_band != "dummy":
-            wave_machine_parser.add_argument("Mb", type=int, metavar=f"Mb ({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help="Maximum band to consider")
-            wave_machine_parser.add_argument("-mb", type=int, default=m.initial_band, metavar=f"({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help=f"Minimum band to consider (default: {m.initial_band})")
+            bands_machine_parser.add_argument("Mb", type=int, metavar=f"Mb ({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help="Maximum band to consider")
+            bands_machine_parser.add_argument("-mb", type=int, default=m.initial_band, metavar=f"({m.initial_band}-{m.nbnd-1})", choices=range(m.initial_band, m.nbnd), help=f"Minimum band to consider (default: {m.initial_band})")
         else:
-            wave_machine_parser.add_argument("Mb", type=int, metavar=f"Mb (0-{m.nbnd-1})", choices=range(m.nbnd), help="Maximum band to consider")
-            wave_machine_parser.add_argument("-mb", type=int, default=0, metavar=f"(0-{m.nbnd-1})", choices=range(m.nbnd), help="Minimum band to consider (default: 0)")
+            bands_machine_parser.add_argument("Mb", type=int, metavar=f"Mb (0-{m.nbnd-1})", choices=range(m.nbnd), help="Maximum band to consider")
+            bands_machine_parser.add_argument("-mb", type=int, default=0, metavar=f"(0-{m.nbnd-1})", choices=range(m.nbnd), help="Minimum band to consider (default: 0)")
 
     except NameError:
         print(f"berry-vis cannot display any output because no berry calculations can be found in the directory: {os.getcwd()}")
@@ -626,26 +626,26 @@ def berry_vis_cli():
     ###########################################################################
     # HANDLE BERRY VIS SUITE SUB PROGRAMS
     ###########################################################################
-    from berry.vis import _debug, _geometry, _wave
+    from berry.vis import _debug, _geometry, _bands
 
     program_dict: Dict[str, Callable] = {
         "debug": _debug.debug,
         "geometry": _geometry.geometry,
-        "wave": _wave.wave,
+        "bands": _bands.bands,
     }
 
     program_dict[args.vis_programs](args)
 
-def handle_wave_parser(debug_parser: CustomParser) -> Tuple[argparse.Namespace]:
-    wave_programs_parser = debug_parser.add_subparsers(metavar="WAVE_PROGRAMS", dest="wave_vis", help="Choose how to visualize the bands.")
+def handle_bands_parser(debug_parser: CustomParser) -> Tuple[argparse.Namespace]:
+    bands_programs_parser = debug_parser.add_subparsers(metavar="BANDS_PROGRAMS", dest="bands_vis", help="Choose how to visualize the bands.")
 
     # VIEW CORRECTED
-    wave_corrected_parser = wave_programs_parser.add_parser("corrected", help="Shows the corrected bands.")
+    bands_corrected_parser = bands_programs_parser.add_parser("corrected", help="Shows the corrected bands.")
 
     # VIEW MACHINE
-    wave_machine_parser = wave_programs_parser.add_parser("machine", help="Shows the original bands.")
+    bands_machine_parser = bands_programs_parser.add_parser("machine", help="Shows the original bands.")
 
-    return wave_corrected_parser, wave_machine_parser
+    return bands_corrected_parser, bands_machine_parser
 
 def handle_debug_parser(debug_parser: CustomParser) -> Tuple[argparse.Namespace]:
     debug_programs_parser = debug_parser.add_subparsers(metavar="DEBUG_PROGRAMS", dest="debug_vis", help="Choose a debug program.")
